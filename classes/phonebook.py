@@ -1,7 +1,10 @@
+import math
 from classes.record import Record
+
 
 RECORDS_ON_PAGE = 5 # Количество записей на странице
 FILENAME = 'phonebook.txt' # Имя файла справочника
+
 
 class Phonebook:
     def __init__(self):
@@ -12,7 +15,7 @@ class Phonebook:
             self.records.remove(None)
         except:
             pass
-        self.max_page = len(self.records)//RECORDS_ON_PAGE+1
+        self.max_page = math.ceil(len(self.records)/RECORDS_ON_PAGE)
 
     def add_record(self, record_data: list[str]) -> None:
         self.records.append(Record(record_data))
@@ -32,16 +35,19 @@ class Phonebook:
         return results
     
     def find_records_by_multiple(self, params: list[str], values: list[str]) -> set:
-        results = self.find_records(param[0], values[0])
-        for i, param in enumerate(params, 1):
+        results = self.find_records(params.pop(0), values.pop(0))
+        for i, param in enumerate(params):
             results &= self.find_records(param, values[i])
         return results
 
-    def __save_pb(self):
+    def edit_record(self, id: int, param: str, value: str) -> None:
+        self.records[id].d[param] = value
+        self.__save_pb()
+
+    def __save_pb(self) -> None:
         data = '\n'.join(map(lambda x: x.record_to_row() if x is not None else '', self.records))
         with open(FILENAME, 'w', encoding='utf8') as file:
             file.write(f'{data}\n')
-
 
 
 if __name__ == '__main__':

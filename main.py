@@ -6,20 +6,20 @@ from classes.phonebook import Phonebook
 def main():
     pb = Phonebook()
     selector = 0
-    while selector != 5:
+    while selector != '5':
         menu.print_main_menu()
-        selector = int(input(menu.menu_inp))
+        selector = input(menu.menu_inp)
         match selector:
-            case 1:
+            case '1':
                 menu.read_pb(pb)
-            case 2:
+            case '2':
                 menu.add_record_to_pb(pb)
-            case 3:
-                # menu.edit_record(pb)
+            case '3':
+                menu.edit_record(pb)
                 pass
-            case 4:
+            case '4':
                 menu.find_record(pb)
-            case 5:
+            case '5':
                 print('bb')
                 exit()
             case _:

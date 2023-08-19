@@ -1,11 +1,59 @@
 from samples import *
 from classes.phonebook import Phonebook
 
+IDS_DICT = {
+    1: ('фамилию', 'LastName'),
+    2: ('имя', 'FirstName'),
+    3: ('отчество', 'MidName'),
+    4: ('организацию', 'Organization'),
+    5: ('рабочий номер телефона', 'WorkPhoneNumber'),
+    6: ('личный номер телефона', 'SelfPhoneNumber')
+}
+
+def param_match_case(message: str, edit=False):
+    selector = ''
+    while selector != '7':
+        print(message)
+        selector = input(menu_inp)
+        match selector:
+            case '1' | '2' | '3' | '4' | '5' | '6':
+                param = IDS_DICT[int(selector)][1]
+            case '7':
+                break
+            case _:
+                print(incorret_inp)
+                continue
+        if edit == False:
+            value = input(f'Введите {IDS_DICT[int(selector)][0]}: ')
+        else:
+            if selector in '123':
+                value = names_input_validator(f'Введите {IDS_DICT[int(selector)][0]}: ')
+            elif selector in '56':
+                value = phone_numbers_input_validator(f'Введите {IDS_DICT[int(selector)][0]}: ')
+            else:
+                value = input(f'Введите {IDS_DICT[int(selector)][0]}: ')
+        return param, value
+
+
+def id_validator(pb: Phonebook) -> int:
+    valid = False
+    while valid == False:
+        id = input(f'Введите ID элемента. ID от 0 до {len(pb.records)-1}: ')
+        if id.isdigit() == True:
+            if int(id) > 0 and int(id) < len(pb.records):
+                valid = True
+    return int(id)
 
 def print_main_menu() -> None:
     print(main_menu)
 
- 
+
+def print_search_results(results: set) -> None:
+    print(f'Найдено {len(results)} записей:\n')
+    for id, record in results:
+        print(f'[{id}] {record.data_record()}')
+
+
 def read_pb(pb: Phonebook) -> None:
     page = 1
     max_page = pb.max_page
@@ -34,20 +82,26 @@ def read_pb(pb: Phonebook) -> None:
 
 def names_input_validator(message: str) -> str:
     valid = False
+    error_msg = ''
     while valid == False:
+        print(error_msg)
         name = input(message)
         valid = (name.istitle() and name.isalpha())
+        error_msg = error_msg_text
     return name
         
 
 def phone_numbers_input_validator(message: str, work = False) -> str:
     valid = False
+    error_msg = ''
     while valid == False:
+        print(error_msg)
         number = input(message)
         if work == True:
             valid = (number[:2] == '+7' and number[2:].isdigit() and len(number) == 12) or (number == '')
         else:
             valid = number[:2] == '+7' and number[2:].isdigit() and len(number) == 12
+        error_msg = error_msg_number
     return number
 
 
@@ -63,69 +117,40 @@ def add_record_to_pb(pb: Phonebook):
 
 
 def find_record(pb: Phonebook):
-    selector = 0
-    while selector != 4:
+    selector = ''
+    while selector != '4':
         print(find_menu)
-        selector = int(input(menu_inp))
+        selector = input(menu_inp)
         match selector:
-            case 1:
+            case '1':
                 find_by_id(pb)
-            case 2:
+            case '2':
                 find_by_one(pb)
-            case 3:
-                pass
-            case 4:
+            case '3':
+                find_by_multiple(pb)
+            case '4':
                 print('\n')
             case _:
                 print(incorret_inp)
 
 
 def find_by_id(pb: Phonebook):
-    valid = False
-    while valid == False:
-        id = int(input(f'Введите ID элемента. ID от 0 до {len(pb.records)-1}: '))
-        if id > 0 and id < len(pb.records):
-            valid = True
+    id = id_validator(pb)
     print(f'[{id}] {pb.records[id].data_record()}')
     print('Нажмите Enter, чтобы вернутся назад.')
     input()
 
 
 def find_by_one(pb: Phonebook):
-    selector = 0
-    while selector == 7:
-        print(find_one)
-        selector = int(input(menu_inp))
-        match selector:
-            case 1:
-                param = 'LastName'
-            case 2:
-                param = 'FirstName'
-            case 3:
-                param = 'MidName'
-            case 4:
-                param = 'Organization'
-            case 5:
-                param = 'WorkPhoneNumber'
-            case 6:
-                param = 'SelfPhoneNumber'
-            case 7:
-                break
-            case _:
-                print(incorret_inp)
-                continue
-        value = input('Введите значение поиска: ')
+    while True:
+        param, value = param_match_case(find_one)
         results = pb.find_records(param, value)
-        print(f'Найдено {len(results)} результатов:\n')
-        for id, record in results:
-            print(f'[{id}] {record.data_record()}')
+        print_search_results(results)
         ans = input('Продолжить поиск? (y/n): ')
         if ans == 'y':
             pass
-        elif ans == 'n':
-            break
         else:
-            print(incorret_inp)
+            break
 
 
 def find_by_multiple(pb: Phonebook):
@@ -142,34 +167,47 @@ def find_by_multiple(pb: Phonebook):
         'Поиск по рабочему номеру телефона',
         'Поиск по личному номеру телефона',
     ]
-    ids_dict = {
-        1: ('фамилию', 'LastName'),
-        2: ('имя', 'FirstName'),
-        3: ('отчество', 'MidName'),
-        4: ('организацию', 'Organization'),
-        5: ('рабочий номер телефона', 'WorkPhoneNumber'),
-        6: ('личный номер телефона', 'SelfPhoneNumber')
-    }
-    selector = 0
-    while selector != 8:
+    selector = ''
+    while selector != '8':
         for i, menu_variant in enumerate(menu_choice):
             print(f'[{i+1}] {menu_variant} {checker(i+1)}')
         print('[7] Продолжить')
         print('[8] Назад')
-        selector = int(input(menu_inp))
-        if selector in range(1, 7):
-            add_del(selector)
-        elif selector == 7:
+        selector = input(menu_inp)
+        if selector in '123456':
+            add_del(int(selector))
+        elif selector == '7':
             if len(choices) != 0:
                 for id in choices:
-                    params.append(ids_dict[id][1])
-                    values.append(input(f'Введите {ids_dict[id][0]}: '))
-                pb.find_records_by_multiple(params, values) 
+                    params.append(IDS_DICT[id][1])
+                    values.append(input(f'Введите {IDS_DICT[id][0]}: '))
+                results = pb.find_records_by_multiple(params, values)
+                print_search_results(results)
+                ans = input('Продолжить поиск? (y/n): ')
+                if ans == 'y':
+                    pass
+                elif ans == 'n':
+                    break
+                else:
+                    print(incorret_inp)
             else:
                 print('Вы не выбрали параметры поиска')
-        elif selector == 8:
-            print('пошли нахуй')
+        elif selector == '8':
+            print('\n')
             break
         else:
             print(incorret_inp)
             continue
+
+
+def edit_record(pb: Phonebook):
+    id = id_validator(pb)
+    while True:
+        param, value = param_match_case(f'\n[{id}] {pb.records[id].data_record()}{edit_one}', edit=True)
+        print(param, value)
+        pb.edit_record(id, param, value)
+        ans = input('Продолжить изменения? (y/n): ')
+        if ans == 'y':
+            pass
+        else:
+            break
