@@ -51,16 +51,16 @@ def print_main_menu() -> None:
 def print_search_results(results: set) -> None:
     print(f'Найдено {len(results)} записей:\n')
     for id, record in results:
-        print(f'[{id}] {record.data_record()}')
+        print(f'[{id}] {record.get_info()}')
 
 
 def read_pb(pb: Phonebook) -> None:
     page = 1
-    max_page = pb.max_page
+    max_page = pb.page_count
     inp = ''
     while inp != 'b':
         print("\nТЕЛЕФОННЫЙ СПРАВОЧНИК:\n")
-        pb.read_pb(page)
+        pb.print_page(page)
         print(page_commands)
         inp = input("Введите команду: ")
         match inp:
@@ -136,7 +136,7 @@ def find_record(pb: Phonebook):
 
 def find_by_id(pb: Phonebook):
     id = id_validator(pb)
-    print(f'[{id}] {pb.records[id].data_record()}')
+    print(f'[{id}] {pb.records[id].get_info()}')
     print('Нажмите Enter, чтобы вернутся назад.')
     input()
 
@@ -203,7 +203,7 @@ def find_by_multiple(pb: Phonebook):
 def edit_record(pb: Phonebook):
     id = id_validator(pb)
     while True:
-        param, value = param_match_case(f'\n[{id}] {pb.records[id].data_record()}{edit_one}', edit=True)
+        param, value = param_match_case(f'\n[{id}] {pb.records[id].get_info()}{edit_one}', edit=True)
         print(param, value)
         pb.edit_record(id, param, value)
         ans = input('Продолжить изменения? (y/n): ')
